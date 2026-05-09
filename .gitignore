@@ -149,6 +149,8 @@ activemq-data/
 
 # Environments
 .env
+.env.*
+!.env.example
 .envrc
 .venv
 env/
@@ -156,6 +158,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+secrets/
 
 # Spyder project settings
 .spyderproject
@@ -187,6 +190,7 @@ cython_debug/
 #   and can be added to the global gitignore or merged into this file.  For a more nuclear
 #   option (not recommended) you can uncomment the following to ignore the entire idea folder.
 # .idea/
+.idea/
 
 # Abstra
 #   Abstra is an AI-powered process automation framework.
@@ -200,6 +204,8 @@ cython_debug/
 #   and can be added to the global gitignore or merged into this file. However, if you prefer, 
 #   you could uncomment the following to ignore the entire vscode folder
 # .vscode/
+.vscode/
+*.code-workspace
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
@@ -216,3 +222,36 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Credentials and certificates
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Backups and local archives
+backups/
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.sql
+*.sqlite
+*.db
+
+# Music and media files
+*.aac
+*.aiff
+*.alac
+*.flac
+*.m4a
+*.mp3
+*.ogg
+*.opus
+*.wav
+*.wma
+
+# OS files
+.DS_Store
+Thumbs.db

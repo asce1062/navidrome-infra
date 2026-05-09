@@ -1,0 +1,25 @@
+services:
+  navidrome:
+    image: ${NAVIDROME_IMAGE:-deluan/navidrome:latest}
+    restart: unless-stopped
+    expose:
+      - "4533"
+    environment:
+      ND_MUSICFOLDER: /music
+      ND_DATAFOLDER: /data
+      ND_SCANSCHEDULE: ${ND_SCANSCHEDULE:-1h}
+      ND_LOGLEVEL: ${ND_LOGLEVEL:-info}
+      ND_SESSIONTIMEOUT: ${ND_SESSIONTIMEOUT:-24h}
+      ND_ENABLETRANSCODINGCONFIG: ${ND_ENABLETRANSCODINGCONFIG:-true}
+    volumes:
+      - type: bind
+        source: ${NAVIDROME_MUSIC_DIR:-/opt/navidrome/music}
+        target: /music
+        read_only: true
+      - type: volume
+        source: navidrome_data
+        target: /data
+
+volumes:
+  navidrome_data:
+    name: navidrome_data
