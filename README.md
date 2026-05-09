@@ -1,12 +1,12 @@
 # navidrome-infra
 
-Git-backed Coolify deployment for Navidrome at `music.alexmbugua.me`.
+Git-backed Coolify deployment for Navidrome at `music.example.com`.
 
 ## Architecture
 
 This repository deploys one Navidrome container from `docker-compose.yml`.
 Coolify builds and runs the Compose project from Git, provides the public
-HTTP routing, and should attach the domain `music.alexmbugua.me` to the
+HTTP routing, and should attach the domain `music.example.com` to the
 Navidrome service on internal port `4533`.
 
 Storage is intentionally outside the container:
@@ -15,8 +15,8 @@ Storage is intentionally outside the container:
 - `navidrome_data` is a Docker named volume mounted at `/data`.
 - Music files, backups, `.env` files, tokens, and passwords are not stored in Git.
 
-DNS is managed in Netlify. This repo assumes `music.alexmbugua.me` already
-points to the Hetzner server public IP where Coolify is running.
+DNS is managed outside this repository. This repo assumes `music.example.com`
+already points to the server where Coolify is running.
 
 ## Required Server Directories
 
@@ -39,11 +39,11 @@ write application data.
 1. Create a new Coolify resource from this Git repository.
 2. Choose Docker Compose as the deployment type.
 3. Use `docker-compose.yml` from the repository root.
-4. Set the public domain to `music.alexmbugua.me`.
+4. Set the public domain to `music.example.com`.
 5. Route traffic to service `navidrome` on internal port `4533`.
 6. Add environment variables only if you need to override `.env.example`.
 7. Deploy.
-8. Open `https://music.alexmbugua.me` and create the first admin user in the
+8. Open `https://music.example.com` and create the first admin user in the
    Navidrome web UI.
 
 Do not configure passwords or admin credentials in this repo. Navidrome creates
@@ -60,19 +60,70 @@ Docker volume:
 navidrome_data  # Navidrome database, settings, cache, and application data
 ```
 
-## Adding Music
+## Uploading Music Safely
 
-Copy music files to `/opt/navidrome/music` on the server. Keep a normal artist
-and album folder layout where practical.
+Root uploads are discouraged. Use a dedicated upload account so routine music
+syncs do not require server administrator access.
 
-Example:
+The recommended flow is:
+
+```text
+local machine -> rsync/SFTP -> musicadmin user -> /opt/navidrome/music -> Navidrome scan
+```
+
+Create or update the upload user on the server:
+
+```bash
+sudo ./scripts/create-musicadmin.sh
+```
+
+Install an SSH public key without overwriting existing keys:
+
+```bash
+NAVIDROME_AUTHORIZED_KEY_FILE=/path/to/key.pub sudo -E ./scripts/create-musicadmin.sh
+```
+
+Dry run an upload from a local machine:
+
+```bash
+./scripts/upload-music.sh \
+  --source ./Music/ \
+  --target musicadmin@example.com:/opt/navidrome/music/ \
+  --dry-run
+```
+
+Upload music:
+
+```bash
+./scripts/upload-music.sh \
+  --source ./Music/ \
+  --target musicadmin@example.com:/opt/navidrome/music/
+```
+
+Mirror sync and delete remote files that are no longer present locally:
+
+```bash
+./scripts/upload-music.sh \
+  --source ./Music/ \
+  --target musicadmin@example.com:/opt/navidrome/music/ \
+  --delete
+```
+
+Use `--delete` carefully. The upload helper only enables remote deletion when
+you explicitly pass that flag.
+
+Keep a normal artist and album folder layout where practical. Navidrome scans
+the library every hour by default and can also be scanned manually from the web
+UI. You can change the automatic scan interval with `ND_SCANSCHEDULE`.
+
+More detail is in [docs/music-upload.md](docs/music-upload.md).
+
+If you need a direct server-side copy, keep the target generic and do not store
+music files in this repository:
 
 ```bash
 sudo rsync -av ./Music/ /opt/navidrome/music/
 ```
-
-Navidrome scans the library every hour by default. You can change this with
-`ND_SCANSCHEDULE`.
 
 ## Backups
 
@@ -113,3 +164,4 @@ More detail is in [docs/backups.md](docs/backups.md).
 
 - [Deployment guide](docs/deployment.md)
 - [Backup and restore guide](docs/backups.md)
+- [Music upload guide](docs/music-upload.md)

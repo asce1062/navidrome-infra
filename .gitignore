@@ -225,6 +225,7 @@ __marimo__/
 
 # Credentials and certificates
 *.pem
+*.pub
 *.key
 *.crt
 *.p12
