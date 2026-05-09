@@ -4,8 +4,8 @@ This project is designed for a Coolify Docker Compose deployment from Git.
 
 ## Prerequisites
 
-- A Hetzner server running Coolify.
-- Netlify DNS has an `A` or `CNAME` record for `music.alexmbugua.me` pointing
+- A server running Coolify.
+- Netlify DNS has an `A` or `CNAME` record for `music.example.com` pointing
   to the Coolify server.
 - Docker is available on the server.
 - `/opt/navidrome/music` exists on the server.
@@ -21,7 +21,7 @@ sudo ./scripts/prepare-server.sh
 1. In Coolify, create a new resource from this Git repository.
 2. Select Docker Compose.
 3. Use `docker-compose.yml` at the repository root.
-4. Configure the domain as `music.alexmbugua.me`.
+4. Configure the domain as `music.example.com`.
 5. Configure the app/service port as `4533`.
 6. Deploy.
 
@@ -49,7 +49,7 @@ Do not commit `.env` files. Use `.env.example` as documentation only.
 After the first successful deployment, open:
 
 ```text
-https://music.alexmbugua.me
+https://music.example.com
 ```
 
 Navidrome prompts for the first admin user in the web UI. Do not store that
