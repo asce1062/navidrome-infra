@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
+if [ -z "${BASH_VERSION:-}" ]; then
+  echo "Error: this script must be run with Bash." >&2
+  echo "Run it as: ./scripts/upload-music.sh" >&2
+  exit 1
+fi
+
+if [[ -o posix ]]; then
+  echo "Error: this script is running in POSIX sh mode, but it requires Bash." >&2
+  echo "Run it as: ./scripts/upload-music.sh" >&2
+  exit 1
+fi
+
 set -euo pipefail
 
 SOURCE=""
@@ -11,7 +23,7 @@ EXCLUDES=()
 usage() {
   cat <<'USAGE'
 Usage:
-  upload-music.sh --source <local-path> --target <user@host:/remote/path/> [options]
+  ./scripts/upload-music.sh --source <local-path> --target <user@host:/remote/path/> [options]
 
 Options:
   --source <local-path>   Local file or directory to upload.
@@ -130,9 +142,11 @@ main() {
     rsync_cmd+=(--checksum)
   fi
 
-  for exclude_pattern in "${EXCLUDES[@]}"; do
-    rsync_cmd+=(--exclude "${exclude_pattern}")
-  done
+  if [[ "${#EXCLUDES[@]}" -gt 0 ]]; then
+    for exclude_pattern in "${EXCLUDES[@]}"; do
+      rsync_cmd+=(--exclude "${exclude_pattern}")
+    done
+  fi
 
   rsync_cmd+=("${SOURCE}" "${TARGET}")
 
