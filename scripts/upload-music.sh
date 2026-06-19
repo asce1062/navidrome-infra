@@ -120,15 +120,38 @@ print_command() {
   printf '\n'
 }
 
+print_summary() {
+  local tmp_output="$1"
+  local files_total files_transferred
+
+  files_total=$(grep -E "^Number of files:" "${tmp_output}" | grep -oE "[0-9]+" | head -1 || true)
+  files_transferred=$(grep -E "^Number of (regular )?files transferred:" "${tmp_output}" | grep -oE "[0-9]+" | head -1 || true)
+  files_total="${files_total:-0}"
+  files_transferred="${files_transferred:-0}"
+
+  echo ""
+  echo "─────────────────────────────────────"
+  if [[ "${DRY_RUN}" -eq 1 ]]; then
+    echo "  Mode             : dry run (no files changed)"
+    echo "  Files considered : ${files_total}"
+    echo "  Would transfer   : ${files_transferred}"
+  else
+    echo "  Files considered : ${files_total}"
+    echo "  Files uploaded   : ${files_transferred}"
+  fi
+  echo "─────────────────────────────────────"
+}
+
 main() {
   local rsync_cmd
   local exclude_pattern
+  local tmp_output
 
   parse_args "$@"
   require_command rsync
   validate_args
 
-  rsync_cmd=(rsync -avz --progress)
+  rsync_cmd=(rsync -avz --progress --stats)
 
   if [[ "${DRY_RUN}" -eq 1 ]]; then
     rsync_cmd+=(--dry-run)
@@ -150,8 +173,13 @@ main() {
 
   rsync_cmd+=("${SOURCE}" "${TARGET}")
 
+  tmp_output=$(mktemp)
+  trap "rm -f '${tmp_output}'" EXIT
+
   print_command "${rsync_cmd[@]}"
-  "${rsync_cmd[@]}"
+  "${rsync_cmd[@]}" | tee "${tmp_output}"
+
+  print_summary "${tmp_output}"
 }
 
 main "$@"
